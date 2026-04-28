@@ -1,0 +1,163 @@
+:root {
+	--main-color: #00000050;
+	--bg-color: hwb(72 60% 38% / 0.801);
+	--accent-color: #000000;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	background-color: var(--bg-color);
+	color: #ffffff;
+	font-family: "Courier New", monospace;
+	padding: 5vw;
+	line-height: 1.6;
+	margin: 0;
+	overflow-x: hidden;
+}
+.products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.case-item {
+    width: 250px;
+}
+	/* ШУМ НА ФОНЕ */
+	body::before {
+		content: "";
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
+		pointer-events: none;
+		z-index: 10;
+	}
+
+/* НАВИГАЦИЯ */
+.nav-bar {
+	display: flex;
+	gap: 20px;
+	border-bottom: 1px solid #ffffff;
+	padding-bottom: 20px;
+	margin-bottom: 30px;
+}
+a {
+    color: #FFFFFF; /* Чистый белый цвет */
+    text-decoration: none; /* Убирает стандартное подчеркивание, если нужно */
+    transition: color 0.3s ease; /* Плавный переход цвета при наведении */
+}
+
+/* Состояние при наведении курсора */
+a:hover {
+    color: #808080; /* Серый цвет (можно заменить на ваш hwb код) */
+}
+
+/* СЕКЦИИ И КАРТОЧКИ */
+.header {
+	border-bottom: 1px solid #ffffff;
+	padding-bottom: 30px;
+	margin-bottom: 50px;
+}
+
+.name {
+	font-size: clamp(1.5rem, 5vw, 3rem);
+	letter-spacing: -2px;
+	text-transform: uppercase;
+	font-weight: 900;
+}
+
+.section {
+	margin-bottom: 60px;
+}
+
+.case-title {
+	color: var(--main-color);
+	text-transform: uppercase;
+	font-weight: bold;
+	margin-bottom: 15px;
+	display: flex;
+	align-items: center;
+}
+
+	.case-title::before {
+		content: "> ";
+		margin-right: 10px;
+	}
+
+.case-item {
+	background: #ffffff;
+	border: 1px solid #1a1a1a;
+	padding: 20px;
+	margin-bottom: 15px;
+	transition: 0.3s;
+}
+
+	.case-item:hover {
+		border-color: var(--main-color);
+		background: #111;
+	}
+
+.stack {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+	align-items: stretch;
+}
+
+.stack-item {
+	background: #0d0d0d;
+	border: 1px solid #1a1a1a;
+	padding: 20px;
+	flex: 1;
+	min-width: 180px;
+	font-size: 0.85rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+a {
+	color: #fff;
+	text-decoration: none;
+	border-bottom: 1px dashed var(--accent-color);
+	transition: 0.3s;
+}
+
+	a:hover {
+		color: var(--main-color);
+		border-color: var(--main-color);
+	}
+
+	@media (max-width: 768px) {
+    /* Схлопываем сетку в одну колонку */
+    .stack {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    /* Карточка товара на телефоне */
+    .case-item {
+        width: 90% !important; /* Почти на всю ширину экрана */
+        margin-bottom: 20px;
+    }
+
+    /* Навигация (кнопки сверху) */
+    .nav-bar {
+        flex-wrap: wrap; /* Чтобы кнопки не вылезали за экран */
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        font-size: 12px; /* Чуть мельче текст для мобилок */
+        padding: 8px 12px;
+    }
+}
