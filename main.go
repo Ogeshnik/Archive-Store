@@ -361,14 +361,19 @@ func main() {
 		c.Redirect(http.StatusSeeOther, "/")
 	})
 	// --- ЗАПУСК ---
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	srv := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":" + port,
 		Handler:      r,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  30 * time.Second,
 	}
 
-	fmt.Println("[SYSTEM]: ARCHIVE SERVER RUNNING ON :8080")
+	fmt.Println("[SYSTEM]: ARCHIVE SERVER RUNNING ON :" + port)
 	srv.ListenAndServe()
 }
