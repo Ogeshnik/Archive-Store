@@ -1,112 +1,304 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="prototypes.css">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My-Archive</title>
+    <link rel="stylesheet" href="prototypes.css">
     <style>
-        :root { --main-color: #00000050; --bg-color: hwb(72 60% 38% / 0.801); --accent-color: #ffffff; }
-        * { box-sizing: border-box; }
-        body { 
-            background-color: var(--bg-color); 
-            color: #ffffff; 
-            font-family: "Courier New", monospace; 
-            padding: 5vw; 
-            line-height: 1.6; 
+        :root {
+            --main-color: #00000050;
+            --bg-color: hwb(72 60% 38% / 0.801);
+            --accent-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: "Courier New", monospace;
+            padding: 5vw;
+            line-height: 1.6;
             margin: 0;
             overflow-x: hidden;
         }
-        
+
         body::before {
             content: "";
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
-            pointer-events: none; z-index: 10;
+            pointer-events: none;
+            z-index: 10;
         }
 
-        .header { border-bottom: 1px solid #222; padding-bottom: 30px; margin-bottom: 50px; }
-        .name { font-size: clamp(1.5rem, 5vw, 3rem); letter-spacing: -2px; text-transform: uppercase; font-weight: 900; }
-        .tag { color: var(--accent-color); font-size: 0.8rem; margin-top: 5px; }
+        .header {
+            border-bottom: 1px solid #6d6d6d;
+            padding-bottom: 30px;
+            margin-bottom: 50px;
+        }
 
-        .section { margin-bottom: 60px; animation: fadeIn 1s ease-out; }
-        .case-title { color: var(--main-color); text-transform: uppercase; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; }
-        .case-title::before { content: "> "; margin-right: 10px; }
+        .name {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            letter-spacing: -2px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
 
-        .case-item { background: #0d0d0d; border: 1px solid #1a1a1a; padding: 20px; margin-bottom: 15px; transition: 0.3s; cursor: pointer; }
-        .case-item:hover { border-color: var(--main-color); background: #111; transform: translateX(5px); }
-        .case-item p { margin: 0; font-size: 0.95rem; text-transform: uppercase; }
-        .case-item span { color: var(--accent-color); font-size: 0.75rem; display: block; margin-top: 10px; letter-spacing: 2px; }
+        .tag {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
 
-        .stack { display: flex; flex-wrap: wrap; gap: 15px; align-items: stretch; }
-        .stack-item { 
-            background: #0d0d0d; 
-            border: 1px solid #1a1a1a; 
-            padding: 20px; 
-            flex: 1; 
-            min-width: 180px; 
-            font-size: 0.85rem; 
+        .section {
+            margin-bottom: 60px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .case-title {
+            color: var(--main-color);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .case-title::before {
+            content: "> ";
+            margin-right: 10px;
+        }
+
+        .case-item {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .case-item:hover {
+            border-color: var(--main-color);
+            background: #111;
+            transform: translateX(5px);
+        }
+
+        .case-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 760px;
+        }
+
+        .case-row .main-link {
+            display: block;
+            width: 100%;
+        }
+
+        .case-row .case-item {
+            margin-bottom: 0;
+            width: 100%;
+            min-height: 100px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .case-item p {
+            margin: 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .case-item span {
+            color: var(--accent-color);
+            font-size: 0.72rem;
+            display: block;
+            margin-top: 10px;
+            letter-spacing: 1.8px;
+        }
+
+        .case-item p {
+            margin: 0;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+        }
+
+        .case-item span {
+            color: var(--accent-color);
+            font-size: 0.75rem;
+            display: block;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        .stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: stretch;
+        }
+
+        .stack-item {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            padding: 20px;
+            flex: 1;
+            min-width: 180px;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             transition: 0.3s;
         }
-        .stack-item:hover { border-color: var(--main-color); color: var(--main-color); }
 
-        .main-link { text-decoration: none; color: inherit; display: block; border: none; }
+        .stack-item:hover {
+            border-color: var(--main-color);
+            color: var(--main-color);
+        }
 
-        a { color: #fff; text-decoration: none; border-bottom: 1px dashed var(--accent-color); transition: 0.3s; }
-        a:hover { color: var(--main-color); border-bottom-style: solid; border-color: var(--main-color); }
+        .main-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: none;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 600px) { body { padding: 20px; } .stack-item { min-width: 100%; } }
+        a {
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px dashed var(--accent-color);
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: var(--main-color);
+            border-bottom-style: solid;
+            border-color: var(--main-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px;
+            }
+            .stack-item {
+                min-width: 100%;
+            }
+        }
     </style>
 </head>
-<nav class="nav-bar">
-    <a href="/" class="nav-btn">ГЛАВНАЯ</a>
-    <a href="/prototypes" class="nav-btn">PROTOTYPES</a>
-    <a href="/numbernine" class="nav-btn">NUMBER (N)INE</a>
-    <a href="/rick" class="nav-btn">RICK OWENS</a>
-</nav>
+<body>
+
+    {{ if .IsLoggedIn }}
+        <a href="/logout" style="color: yellow; font-weight: bold;">[ НАЖМИ ЧТОБЫ ВЫЙТИ ]</a>
+    {{ else }}
+        <a href="/login">[ ВХОД ]</a>
+        <a href="/signup">[ РЕГИСТРАЦИЯ ]</a>
+    {{ end }}
+
+    <h1 style="color: rgb(102, 102, 102); background: rgb(219, 219, 219);">
+        {{.Status}}
+    </h1>
+
+    <script>
+        (function() {
+            function updateVisuals() {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const countElem = document.getElementById('cart-count');
+                if (countElem) countElem.innerText = cart.length;
+            }
+
+            window.showTerminalNotif = function(id) {
+                const notif = document.getElementById('terminal-notif');
+                if (notif) {
+                    notif.innerText = `> Товар ${id} В корзине...`;
+                    notif.style.opacity = "1";
+                    notif.style.visibility = "visible";
+                    notif.style.transform = "translateY(-10px)";
+                    setTimeout(() => {
+                        notif.style.opacity = "0";
+                        notif.style.visibility = "hidden";
+                        notif.style.transform = "translateY(0)";
+                    }, 2500);
+                }
+            };
+
+            window.addToCart = function(id) {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                cart.push(id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateVisuals();
+                window.showTerminalNotif(id);
+                console.log(`[SYSTEM]: ID ${id} SAVED`);
+            };
+
+            document.addEventListener('DOMContentLoaded', updateVisuals);
+        })();
+    </script>
+
+    <nav class="nav-bar">
+        <a href="/" class="nav-btn">ГЛАВНАЯ</a>
+        <a href="/shop/prototypes" class="nav-btn">PROTOTYPES</a>
+        <a href="/shop/nine" class="nav-btn">NUMBER (N)INE</a>
+        <a href="/shop/rick" class="nav-btn">RICK OWENS</a>
+    </nav>
 
     <div class="header">
         <div class="name">PROTOTYPES</div>
-        <div class="tag">//ST_PETERSBURG  // ST_PETERSBURG // ST_PETERSBURG</div>
+        <div class="tag">//ST_PETERSBURG // ST_PETERSBURG // ST_PETERSBURG</div>
     </div>
 
     <div class="section">
         <div class="case-title">ARCHIVE / PROJECTS</div>
-        
-        <a href="/prototypes" class="main-link">
-            <div class="case-item">
-                <p>Clothes prototypes</p>
-                <span>2024 2025 2026</span>
-            </div>
-        </a>
+        <div class="case-row">
+            <a href="/shop/prototypes" class="main-link">
+                <div class="case-item">
+                    <p>Clothes prototypes</p>
+                    <span>2024 2025 2026</span>
+                </div>
+            </a>
 
-        <a href="/numbernine" class="main-link">
-            <div class="case-item">
-                <p>clothes Number (N)ine.</p>
-                <span>1998 1999 2000 2001 2002 2003 2004 2006 2007 2008 2009</span>
-            </div>
-        </a>
+            <a href="/shop/nine" class="main-link">
+                <div class="case-item">
+                    <p>clothes Number (N)ine.</p>
+                    <span>1998 1999 2000 2001 2002 2003 2004 2006 2007 2008 2009</span>
+                </div>
+            </a>
 
-        <a href="/rick" class="main-link">
-            <div class="case-item">
-                <p>Rick owens</p>
-                <span>2026 2025 2024 2023</span>
-            </div>
-        </a>
+            <a href="/shop/rick" class="main-link">
+                <div class="case-item">
+                    <p>Rick owens</p>
+                    <span>2026 2025 2024 2023</span>
+                </div>
+            </a>
+        </div>
     </div>
 
     <div class="section">
         <div class="case-title">ОСТАЛЬНОЕ</div>
         <div class="stack">
-            <a href="hauntedstarbucks" class="stack-item">Haunted Starbucks</a>
-            <a  href="mihara" class="stack-item">Mihara</a>
-            <a  href="saintmichael" class="stack-item">Saint Michael</a>
-            <a  href="soloist" class="stack-item">I am soloist by Takahiro Miyashita</a>
+            <a href="/shop/starbucks" class="stack-item">Haunted Starbucks</a>
+            <a href="/shop/mihara" class="stack-item">Mihara</a>
+            <a href="/shop/saint" class="stack-item">Saint Michael</a>
+            <a href="/shop/soloist" class="stack-item">I am soloist by Takahiro Miyashita</a>
         </div>
     </div>
 
@@ -115,11 +307,17 @@
         <p>TG: <a href="https://t.me" target="_blank">@TripleSwag</a></p>
         <p>Email: <a href="mailto:mavcgbtc@gmail.com">MAVCGBTC@GMAIL.COM</a></p>
     </div>
-    
+
+    <div class="archive-counter" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <a href="/cart" style="background: #636363; color: #fff; border: 1px solid #fff; padding: 10px 20px; text-decoration: none; font-family: monospace; display: block;">
+            АРХИВ ЗАКАЗА [<span id="cart-count">0</span>]
+        </a>
+        <div id="cart-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: #000; border: 1px solid #fff; width: 200px; padding: 10px; font-family: monospace; color: #fff; font-size: 10px;">
+            <div id="dropdown-items">ПУСТО...</div>
+        </div>
+    </div>
+
+    <div id="terminal-notif" style="position: fixed; bottom: 30px; right: 30px; color: white; background: black; padding: 10px; border: 1px solid #333; z-index: 10000; font-family: monospace; opacity: 0; transition: all 0.5s;"></div>
 
 </body>
-</html>
-
-
-    </body>
 </html>

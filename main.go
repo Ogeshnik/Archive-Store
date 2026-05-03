@@ -1,197 +1,374 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+
+	"github.com/joho/godotenv"
 )
 
-// ===== MODEL =====
+// ===== MODELS =====
+
 type Item struct {
-	ID          int
-	Brand       string
-	Year        int
-	Model       string
-	Price       float64
-	Description string
-	Image       string
+	ID       uint `gorm:"primaryKey"`
+	Brand    string
+	Year     int
+	Model    string
+	Price    float64
+	Category string
+	Image    string
 }
 
-// ===== DATA =====
-var archive = []Item{
-	{ID: 1, Brand: "PROTOTYPES", Year: 2024, Model: "HOODIE", Price: 80000, Image: "1.jpg"},
-	{ID: 2, Brand: "PROTOTYPES", Year: 2023, Model: "T-SHIRT", Price: 20000, Image: "2.webp"},
-	{ID: 3, Brand: "PROTOTYPES", Year: 2024, Model: "RED TEE", Price: 25000, Image: "3.webp"},
-	{ID: 4, Brand: "PROTOTYPES", Year: 2024, Model: "BLACK TEE", Price: 18000, Image: "4.jpg"},
-	{ID: 5, Brand: "PROTOTYPES", Year: 2024, Model: "Hoodie", Price: 56000, Image: "5.webp"},
-	{ID: 6, Brand: "PROTOTYPES", Year: 2024, Model: "Hoщdie", Price: 65000, Image: "6.jpg"},
-	{ID: 7, Brand: "PROTOTYPES", Year: 2024, Model: "BASIC HOODIE", Price: 40000, Image: "7.jpg"},
-	{ID: 8, Brand: "PROTOTYPES", Year: 2024, Model: "WASHED HOODIE", Price: 45000, Image: "8.webp"},
-	{ID: 9, Brand: "PROTOTYPES", Year: 2024, Model: "GRAPHIC HOODIE", Price: 50000, Image: "9.webp"},
+type User struct {
+	gorm.Model
+	Email    string `gorm:"unique"`
+	Password string
 }
 
-var rickArchive = []Item{
-	{ID: 10, Brand: "RICK OWENS", Year: 2023, Model: "T-shirt", Price: 65000, Image: "rick1.jpg"},
-	{ID: 11, Brand: "RICK OWENS", Year: 2024, Model: "T-shirt", Price: 80000, Image: "rick2.jpg"},
-	{ID: 12, Brand: "RICK OWENS", Year: 2024, Model: "T-shirt", Price: 95000, Image: "rick3.webp"},
-	{ID: 13, Brand: "RICK OWENS", Year: 2024, Model: "MOUNTAIN HOODIE", Price: 55000, Image: "rick4.jpg"},
-	{ID: 14, Brand: "RICK OWENS", Year: 2024, Model: "Mountain zip hoodie", Price: 60000, Image: "rick5.jpg"},
-	{ID: 15, Brand: "RICK OWENS", Year: 2024, Model: "Hoodie", Price: 30000, Image: "rick6.jpg"},
-	{ID: 16, Brand: "RICK OWENS", Year: 2024, Model: "LEVEL TEE", Price: 28000, Image: "rick7.jpg"},
-	{ID: 17, Brand: "RICK OWENS", Year: 2024, Model: "T-shirt", Price: 70000, Image: "rick8.jpg"},
-	{ID: 18, Brand: "RICK OWENS", Year: 2024, Model: "Hoodie", Price: 75000, Image: "rick9.jpg"},
+var db *gorm.DB
+
+type ClientInfo struct {
+	Attempts     int
+	LastRequest  time.Time
+	BlockedUntil time.Time
 }
 
-var nineArchive = []Item{
-	{ID: 20, Brand: "NUMBER (N)INE", Year: 2004, Model: "Hoodie", Price: 45000, Image: "num1.jpg"},
-	{ID: 21, Brand: "NUMBER (N)INE", Year: 2005, Model: "T-shirt", Price: 35000, Image: "num2.jpg"},
-	{ID: 22, Brand: "NUMBER (N)INE", Year: 2005, Model: "longsleeve", Price: 15000, Image: "num3.jpg"},
-	{ID: 23, Brand: "NUMBER (N)INE", Year: 2004, Model: "longsleeve", Price: 55000, Image: "num4.jpg"},
-	{ID: 24, Brand: "NUMBER (N)INE", Year: 2004, Model: "T-shirt", Price: 40000, Image: "num5.webp"},
-	{ID: 25, Brand: "NUMBER (N)INE", Year: 2005, Model: "hoodie", Price: 38000, Image: "num6.webp"},
-	{ID: 26, Brand: "NUMBER (N)INE", Year: 2004, Model: "Zip-hoodie", Price: 60000, Image: "num7.webp"},
-	{ID: 27, Brand: "NUMBER (N)INE", Year: 2005, Model: "T-shirt", Price: 25000, Image: "num8.webp"},
-	{ID: 28, Brand: "NUMBER (N)INE", Year: 2004, Model: "T-shirt", Price: 42000, Image: "num9.webp"},
-}
-var StarbucksArchive = []Item{
-	{ID: 29, Brand: "Haunted Starbucks", Year: 2025, Model: "T-shirt", Price: 20000, Image: "haunt1.jpg"},
-	{ID: 30, Brand: "Haunted Starbucks", Year: 2026, Model: "Hoodie", Price: 10000, Image: "haunt2.jpg"},
-	{ID: 31, Brand: "Haunted Starbucks", Year: 2025, Model: "Longsleeve", Price: 15000, Image: "haunt3.jpg"},
-}
-var MiharaArchive = []Item{
-	{ID: 32, Brand: "Mihara", Year: 2020, Model: "Hoodie", Price: 45000, Image: "mihara1.jpg"},
-	{ID: 33, Brand: "Mihara", Year: 2015, Model: "T-shirt", Price: 35000, Image: "mihara2.webp"},
-	{ID: 34, Brand: "Mihara", Year: 2016, Model: "T-shirt", Price: 15000, Image: "mihara3.jpg"},
-	{ID: 35, Brand: "Mihara", Year: 2014, Model: "HOODIE", Price: 55000, Image: "mihara4.jpg"},
-	{ID: 36, Brand: "Mihara", Year: 2012, Model: "T-shirt", Price: 40000, Image: "mihara5.jpg"},
-}
-var SaintMichaelArchive = []Item{
-	{ID: 37, Brand: "SaintMichael", Year: 2004, Model: "T-shirt", Price: 45000, Image: "saint1.jpg"},
-	{ID: 38, Brand: "SaintMichael", Year: 2005, Model: "Hoodie", Price: 35000, Image: "saint2.jpg"},
-	{ID: 39, Brand: "SaintMichael", Year: 2005, Model: "T-shirt", Price: 15000, Image: "saint3.jpg"},
-	{ID: 40, Brand: "SaintMichael", Year: 2004, Model: "T-shirt", Price: 55000, Image: "saint4.webp"},
-	{ID: 41, Brand: "SaintMichael", Year: 2004, Model: "T-shirt", Price: 40000, Image: "saint5.jpg"},
-	{ID: 42, Brand: "SaintMichael", Year: 2005, Model: "T-shirt", Price: 38000, Image: "saint6.jpg"},
-	{ID: 43, Brand: "SaintMichael", Year: 2004, Model: "T-shirt", Price: 60000, Image: "saint7.jpg"},
-	{ID: 44, Brand: "SaintMichael", Year: 2005, Model: "T-shirt", Price: 25000, Image: "saint8.avif"},
-}
-var IamsoloistArchive = []Item{
-	{ID: 45, Brand: "Iamsoloist", Year: 2004, Model: "T-shirt", Price: 45000, Image: "solo1.webp"},
-	{ID: 46, Brand: "Iamsoloist", Year: 2005, Model: "T-shirt", Price: 35000, Image: "solo2.jpg"},
-	{ID: 47, Brand: "Iamsoloist", Year: 2005, Model: "Hoodie", Price: 15000, Image: "solo3.webp"},
-	{ID: 48, Brand: "Iamsoloist", Year: 2004, Model: "T-shirt", Price: 55000, Image: "solo4.webp"},
-	{ID: 49, Brand: "Iamsoloist", Year: 2004, Model: "T-shirt", Price: 40000, Image: "solo5.jpg"},
-	{ID: 50, Brand: "Iamsoloist", Year: 2005, Model: "blazer", Price: 38000, Image: "solo6.jpg"},
-}
+var clientInfo = make(map[string]*ClientInfo)
+var clientMutex sync.Mutex
 
-// ===== FIND ITEM =====
-func findItemByID(id string) *Item {
-	search := func(items []Item) *Item {
-		for i := range items {
-			if fmt.Sprintf("%d", items[i].ID) == id {
-				return &items[i]
-			}
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		adminSecret := os.Getenv("ADMIN_SECRET")
+		token, err := c.Cookie("admin_token")
+		if err != nil || token != adminSecret {
+			c.HTML(http.StatusForbidden, "login.html", gin.H{"Status": "ДОСТУП ЗАПРЕЩЕН: ТЫ КТО ТАКОЙ?"})
+			c.Abort()
+			return
 		}
-		return nil
+		c.Next()
+	}
+}
+
+func getClientIP(c *gin.Context) string {
+	if ip := c.GetHeader("X-Real-IP"); ip != "" {
+		return ip
+	}
+	if ips := c.GetHeader("X-Forwarded-For"); ips != "" {
+		return strings.TrimSpace(strings.Split(ips, ",")[0])
+	}
+	addr := c.Request.RemoteAddr
+	if colon := strings.LastIndex(addr, ":"); colon != -1 {
+		return addr[:colon]
+	}
+	return addr
+}
+
+func rateLimitMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := getClientIP(c)
+		clientMutex.Lock()
+		info, ok := clientInfo[ip]
+		if !ok {
+			info = &ClientInfo{LastRequest: time.Now()}
+			clientInfo[ip] = info
+		}
+
+		now := time.Now()
+		if info.BlockedUntil.After(now) {
+			clientMutex.Unlock()
+			c.String(http.StatusTooManyRequests, "Слишком много запросов. Попробуйте позже.")
+			c.Abort()
+			return
+		}
+
+		if now.Sub(info.LastRequest) > time.Minute {
+			info.Attempts = 0
+		}
+		info.Attempts++
+		info.LastRequest = now
+
+		if info.Attempts > 80 {
+			info.BlockedUntil = now.Add(1 * time.Minute)
+			clientMutex.Unlock()
+			c.String(http.StatusTooManyRequests, "Слишком много запросов. Попробуйте через минуту.")
+			c.Abort()
+			return
+		}
+		clientMutex.Unlock()
+		c.Next()
+	}
+}
+
+func setSecureCookie(c *gin.Context, name, value string, maxAge int) {
+	secure := c.Request.TLS != nil
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     "/",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func recaptchaSiteKey() string {
+	return os.Getenv("RECAPTCHA_SITEKEY")
+}
+
+func validateCaptcha(c *gin.Context) bool {
+	secret := os.Getenv("RECAPTCHA_SECRET")
+	if secret == "" {
+		return true
 	}
 
-	if item := search(archive); item != nil {
-		return item
-	}
-	if item := search(rickArchive); item != nil {
-		return item
-	}
-	if item := search(nineArchive); item != nil {
-		return item
-	}
-	if item := search(StarbucksArchive); item != nil {
-		return item
-	}
-	if item := search(MiharaArchive); item != nil {
-		return item
-	}
-	if item := search(SaintMichaelArchive); item != nil {
-		return item
+	response := c.PostForm("g-recaptcha-response")
+	if response == "" {
+		return false
 	}
 
-	if item := search(IamsoloistArchive); item != nil {
-		return item
-	}
+	return verifyCaptcha(response)
+}
 
-	return nil
+func verifyCaptcha(response string) bool {
+	secret := os.Getenv("RECAPTCHA_SECRET")
+	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
+		url.Values{"secret": {secret}, "response": {response}})
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Success bool `json:"success"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false
+	}
+	return result.Success
 }
-func ГЛАВНАЯ(c *gin.Context) {
-	c.HTML(http.StatusOK, "prototypes.html", archive)
+
+func authPageData() gin.H {
+	return gin.H{"RecaptchaSiteKey": recaptchaSiteKey()}
 }
-func prototypes(c *gin.Context) {
-	c.HTML(http.StatusOK, "prototypes_shop.html", archive)
+
+// ===== UTILS =====
+
+// ===== HANDLERS =====
+func initDB() {
+	var err error
+	db, err = gorm.Open(sqlite.Open("archive.db"), &gorm.Config{})
+	if err != nil {
+		fmt.Printf("[DATABASE ERROR]: %v\n", err)
+		panic("DATABASE CONNECTION FAILED")
+	}
+	db.AutoMigrate(&User{}, &Item{})
+	fmt.Println("[SYSTEM]: DATABASE INITIALIZED")
 }
-func rick(c *gin.Context) {
-	c.HTML(http.StatusOK, "rick_owens_shop.html", rickArchive)
-}
-func numberNine(c *gin.Context) {
-	c.HTML(http.StatusOK, "number_nine_shop.html", nineArchive)
-}
-func hauntedstarbucks(c *gin.Context) {
-	c.HTML(http.StatusOK, "hauntedstarbucks.html", StarbucksArchive)
-}
-func mihara(c *gin.Context) {
-	c.HTML(http.StatusOK, "mihara.html", MiharaArchive)
-}
-func saintmichael(c *gin.Context) {
-	c.HTML(http.StatusOK, "saintmichael.html", SaintMichaelArchive)
-}
-func soloist(c *gin.Context) {
-	c.HTML(http.StatusOK, "soloist.html", IamsoloistArchive)
-}
-func product(c *gin.Context) {
-	id := c.Param("id")
-	item := findItemByID(id)
-	if item == nil {
-		c.String(http.StatusNotFound, "Товар не найден")
+
+func register(c *gin.Context) {
+	if !validateCaptcha(c) {
+		c.HTML(http.StatusBadRequest, "signup.html", gin.H{"error": "Подтвердите, что вы не робот", "RecaptchaSiteKey": recaptchaSiteKey()})
 		return
 	}
-	c.HTML(http.StatusOK, "product.html", item)
+
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+	user := User{Email: email, Password: string(hashedPassword)}
+
+	if err := db.Create(&user).Error; err != nil {
+		c.HTML(http.StatusBadRequest, "signup.html", gin.H{"error": "EMAIL ALREADY TAKEN", "RecaptchaSiteKey": recaptchaSiteKey()})
+		return
+	}
+
+	setSecureCookie(c, "user_email", email, 3600)
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
-func apiItems(c *gin.Context) {
-	all := append([]Item{}, archive...)
-	all = append(all, rickArchive...)
-	all = append(all, nineArchive...)
-	all = append(all, StarbucksArchive...)
-	all = append(all, MiharaArchive...)
-	all = append(all, SaintMichaelArchive...)
-	all = append(all, IamsoloistArchive...)
-
-	c.JSON(http.StatusOK, all)
+func signupPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "signup.html", authPageData())
 }
 
-// ===== MAIN =====
+func login(c *gin.Context) {
+	if !validateCaptcha(c) {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Подтвердите, что вы не робот", "RecaptchaSiteKey": recaptchaSiteKey()})
+		return
+	}
+
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	var user User
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		c.HTML(http.StatusNotFound, "login.html", gin.H{"error": "ОБЪЕКТ НЕ НАЙДЕН", "RecaptchaSiteKey": recaptchaSiteKey()})
+		return
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "НЕВЕРНЫЙ ПАРОЛЬ", "RecaptchaSiteKey": recaptchaSiteKey()})
+		return
+	}
+
+	setSecureCookie(c, "user_email", user.Email, 3600*24)
+	c.Redirect(http.StatusSeeOther, "/")
+}
+
+func findItemByID(id string) *Item {
+	var item Item
+	if err := db.First(&item, id).Error; err != nil {
+		return nil
+	}
+	return &item
+}
+
+// ===== ROUTES =====
 func main() {
-	r := gin.Default()
 
-	// static files
+	godotenv.Load()
+	initDB()
+
+	r := gin.Default()
+	r.Use(rateLimitMiddleware())
 	r.Static("/img", "./img")
 	r.Static("/static", "./static")
-
-	// templates
+	r.StaticFile("/prototypes.css", "./prototypes.css")
 	r.LoadHTMLGlob("templates/*")
 
-	// routes
-	r.GET("/", ГЛАВНАЯ)
-	r.GET("/prototypes", prototypes)
-	r.GET("/rick", rick)
-	r.GET("/numbernine", numberNine)
-	r.GET("/product/:id", product)
-	r.GET("/hauntedstarbucks", hauntedstarbucks)
-	r.GET("/mihara", mihara)
-	r.GET("/saintmichael", saintmichael)
-	r.GET("/soloist", soloist)
+	// 2. Создаем сервер
 
-	// api
-	r.GET("/api/items", apiItems)
+	// 3. Настраиваем статику и шаблоны
 
-	// run server
-	r.Run(":8080")
+	// --- АДМИН ЛОГИН ---
+	r.GET("/admin/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "admin_login.html", nil)
+	})
+
+	r.POST("/admin/login", func(c *gin.Context) {
+		password := c.PostForm("password")
+		adminSecret := os.Getenv("ADMIN_SECRET")
+
+		if password != adminSecret {
+			c.HTML(http.StatusUnauthorized, "admin_login.html", gin.H{"error": "НЕВЕРНЫЙ ПАРОЛЬ"})
+			return
+		}
+
+		setSecureCookie(c, "admin_token", adminSecret, 3600*24)
+		c.Redirect(http.StatusSeeOther, "/admin/")
+	})
+
+	admin := r.Group("/admin")
+	admin.Use(AuthRequired())
+	{
+		admin.GET("/", func(c *gin.Context) {
+			c.HTML(200, "admin.html", nil)
+		})
+
+		admin.GET("/logout", func(c *gin.Context) {
+			http.SetCookie(c.Writer, &http.Cookie{Name: "admin_token", Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode})
+			c.Redirect(http.StatusSeeOther, "/")
+		})
+
+		admin.POST("/add", func(c *gin.Context) {
+
+			var newItem Item
+
+			newItem.Brand = c.PostForm("brand")
+			newItem.Model = c.PostForm("model")
+			newItem.Image = c.PostForm("image")
+			newItem.Category = c.PostForm("category")
+
+			price, _ := strconv.Atoi(c.PostForm("price"))
+			newItem.Price = float64(price)
+
+			year, _ := strconv.Atoi(c.PostForm("year"))
+			newItem.Year = year
+
+			db.Create(&newItem)
+
+			c.Redirect(303, "/")
+		})
+	}
+	// --- ГЛАВНАЯ СТРАНИЦА (ОБЪЕДИНЕННАЯ) ---
+	r.GET("/", func(c *gin.Context) {
+		email, err := c.Cookie("user_email")
+
+		isLoggedIn := err == nil && email != ""
+
+		status := "ВХОД НЕ ВЫПОЛНЕН"
+		if isLoggedIn {
+			status = "ВЫ В СВОЕМ АККАУНТЕ"
+		}
+
+		var items []Item
+		db.Find(&items)
+
+		c.HTML(http.StatusOK, "prototypes.html", gin.H{
+			"Category":   "all",
+			"Items":      items,
+			"IsLoggedIn": isLoggedIn,
+			"Status":     status,
+		})
+	})
+	// --- МАГАЗИНЫ ---
+	r.GET("/shop/:cat", func(c *gin.Context) {
+		category := c.Param("cat") // Сервер «ловит» название бренда из ссылки
+		var items []Item
+
+		// Идем в базу и берем только то, что помечено этой категорией
+		db.Where("category = ?", category).Find(&items)
+
+		// Показываем твой шаблон prototypes.html, но с нужным товаром
+		c.HTML(http.StatusOK, "clothes.html", gin.H{
+			"Category": category,
+			"Items":    items,
+		})
+	})
+	// --- ВХОД И РЕГИСТРАЦИЯ ---
+	r.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", authPageData())
+	})
+	r.POST("/login", login)
+
+	r.GET("/signup", signupPage)
+	r.POST("/register", register)
+
+	// --- ОСТАЛЬНОЕ ---
+
+	r.GET("/cart", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "cart.html", gin.H{"title": "Корзина"})
+	})
+
+	r.GET("/logout", func(c *gin.Context) {
+		// Мы перезаписываем куку пустой строкой и ставим время жизни -1 (удаление)
+		http.SetCookie(c.Writer, &http.Cookie{Name: "user_email", Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode})
+
+		// Кидаем обратно на главную
+		c.Redirect(http.StatusSeeOther, "/")
+	})
+	// --- ЗАПУСК ---
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  30 * time.Second,
+	}
+
+	fmt.Println("[SYSTEM]: ARCHIVE SERVER RUNNING ON :8080")
+	srv.ListenAndServe()
 }

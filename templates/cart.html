@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/prototypes.css">
+    <title>АРХИВ ЗАКАЗА — {{.title}}</title>
+</head>
+
+ <script>
+async function showCart() {
+    try {
+        const response = await fetch('/api/items');
+        const allItems = await response.json();
+        const cartIds = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        const list = document.getElementById('cart-list');
+        const totalElem = document.getElementById('total-price');
+        const emptyMsg = document.getElementById('empty-msg');
+
+        if (cartIds.length === 0) {
+            emptyMsg.innerText = "АРХИВ ПУСТ.";
+            return;
+        }
+
+        emptyMsg.remove(); // Убираем надпись "Считывание"
+        list.innerHTML = ""; 
+        let total = 0;
+
+        cartIds.forEach(id => {
+            // ВАЖНО: используем == и .ID большими буквами
+            const item = allItems.find(i => i.ID == id);
+            if (item) {
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #222; padding:10px 0; font-family:monospace;">
+                        <span>> ${item.Brand} ${item.Model}</span>
+                        <span>${item.Price} ₽</span>
+                    </div>`;
+                total += Number(item.Price);
+            }
+        });
+
+        totalElem.innerText = total.toLocaleString();
+    } catch (err) {
+        console.error("Ошибка загрузки архива:", err);
+    }
+}
+
+function clearCart() {
+    localStorage.removeItem('cart');
+    location.reload();
+}
+
+// Запускаем
+showCart();
+</script>
+
+<body class="beton">
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-link">← НАЗАД В ГЛАВНУЮ</a>
+            <h1 class="case-title">Шмотки</h1>
+        </div>
+
+        <div id="cart-list" class="stack">
+            <!-- Сюда JavaScript вставит товары из памяти -->
+            <p id="empty-msg" style="color: #555; font-family: monospace;">ПОИСК ОБЪЕКТОВ В ПАМЯТИ...</p>
+        </div>
+
+        <div class="footer-section">
+            <div class="total-box">
+                <span class="label">ИТОГО К ОПЛАТЕ:</span>
+                <span id="total-price" class="price-val">0</span> <span class="price-val">₽</span>
+            </div>
+            <div id="cart-list" class="stack">
+    
+            </div>
+            
+            <button onclick="checkout()" class="buy-btn" style="width: 100%; margin-top: 20px;">
+                ПОДТВЕРДИТЬ Оплату
+            </button>
+            
+            <button onclick="clearCart()" class="back-link" style="background: none; border: none; margin-top: 10px; cursor: pointer; color: #777;">
+                ОЧИСТИТЬ
+            </button>
+        </div>
+    </div>
+
+   
+    <div id="cart-wrapper" class="stack">
+    <!-- Сюда JS вставит товары -->
+</div>
+<div class="total-bar">
+
+</div>
+<div id="terminal-notif"></div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="/static/prototypes.css">
+    {{if .RecaptchaSiteKey}}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {{end}}
+    
+    <script>
+    (function() {
+        // 1. Функция обновления цифр
+        function updateVisuals() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const countElem = document.getElementById('cart-count');
+            if (countElem) {
+                countElem.innerText = cart.length;
+            }
+        }
+        // Вызываем функцию при загрузке, если нужно
+        window.addEventListener('load', updateVisuals);
+    })(); // Закрыли самовызывающуюся функцию
+    </script>
+</head>
+
+<body>
+  
+    <body class="beton">
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-link">← НАЗАД В ГЛАВНУЮ</a>
+        </div>
+    <div class="container">
+        <h2>&gt; РЕГИСТРАЦИЯ</h2>
+        {{if .error}}
+        <p style="color: tomato;">{{.error}}</p>
+        {{end}}
+<form action="/register" method="POST">
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    {{if .RecaptchaSiteKey}}
+    <div class="g-recaptcha" data-sitekey="{{.RecaptchaSiteKey}}"></div>
+    {{end}}
+
+    <button type="submit">ПОДТВЕРДИТЬ</button>
+</form>
+         <p class="system">ДАННЫЕ БУДУТ ЗАШИФРОВАНЫ</p>
+</div>
+
+{{if .Email}}
+<div class="profile-container">
+    <img src="{{.Avatar}}" alt="avatar" width="120">
+    <h2>ОБЪЕКТ: {{.Email}}</h2>
+    <p>СТАТУС: АКТИВИРОВАН</p>
+    <a href="/">ВЕРНУТЬСЯ</a>
+</div>
+{{end}}
+
+<nav class="nav-bar">
+    <a href="/sign">Регистрация</a>
+    <a href="/">ГЛАВНАЯ</a>
+    <a href="/rick">RICK OWENS</a>
+    <a href="/numbernine">NUMBER (N)INE</a>
+</nav>
+
+</body>
+</html>

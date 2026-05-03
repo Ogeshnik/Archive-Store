@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="/static/prototypes.css">
+    {{if .RecaptchaSiteKey}}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {{end}}
+</head>
+
+<body>
+  
+<h2>> ВХОД_В_СИСТЕМУ</h2>
+{{if .error}}
+<p style="color: tomato;">{{.error}}</p>
+{{end}}
+<form action="/login" method="POST"> <!-- ОТПРАВЛЯЕМ НА ЛОГИН! -->
+    <input type="email" name="email" placeholder="EMAIL" required>
+    <input type="password" name="password" placeholder="PASSWORD" required>
+    {{if .RecaptchaSiteKey}}
+    <div class="g-recaptcha" data-sitekey="{{.RecaptchaSiteKey}}"></div>
+    {{end}}
+    <button type="submit">ПОДТВЕРДИТЬ ЛИЧНОСТЬ</button>
+</form>
+<div class="profile-container">
+    <img src="{{.Avatar}}" alt="avatar" width="120">
+    <h2>ОБЪЕКТ: {{.Email}}</h2>
+    <p>СТАТУС: АКТИВИРОВАН</p>
+    <a href="/">ВЕРНУТЬСЯ</a>
+</div>
+
+
+<nav class="nav-bar">
+    <a href="/">ГЛАВНАЯ</a>
+    <a href="/rick">RICK OWENS</a>
+    <a href="/numbernine">NUMBER (N)INE</a>
+<!-- ... (весь код выше такой же) ... -->
+
+</nav>
+
+{{ if .Email }}
+<div class="profile-container">
+    <img src="{{ .Avatar }}" alt="avatar" width="120">
+    <h2>ОБЪЕКТ: {{ .Email }}</h2>
+    <p>СТАТУС: АКТИВИРОВАН</p>
+    <a href="/">ВЕРНУТЬСЯ</a>
+</div>
+{{ end }} <!-- ВОТ ЗДЕСЬ ОН ДОЛЖЕН БЫТЬ -->
+
+</body>
+</html>

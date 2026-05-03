@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <title>{{.Brand}} - {{.Model}}</title>
     <style>
+
         body {
             
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: hwb(72 60% 38% / 0.801);;
             margin: 0;
             padding: 50px;
-            color: #000;
+            color: hwb(72 60% 38% / 0.801);;
         }
         
         .container {
@@ -32,7 +33,7 @@
         /* КНОПКИ КАК У SPIN4SPIN */
         .buy-btn {
             
-            background: #000; color: #848584; border: none; width: 100%;
+            background: hwb(72 60% 38% / 0.801);; color: #848584; border: none; width: 100%;
             padding: 15px; font-size: 14px; font-weight: bold; cursor: pointer;
             text-transform: uppercase; margin-bottom: 10px;
 
@@ -46,9 +47,55 @@
         .description { font-size: 14px; line-height: 1.6; color: #444; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
     </style>
 </head>
+<script>
+(function() {
+    // 1. Функция обновления цифр
+    function updateVisuals() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const countElem = document.getElementById('cart-count');
+        if (countElem) {
+            countElem.innerText = cart.length;
+        }
+    }
+
+    // 2. Функция анимации
+    window.showTerminalNotif = function(id) {
+        const notif = document.getElementById('terminal-notif');
+        if (notif) {
+            notif.innerText = `> Товар ${id} В корзине...`;
+            notif.style.opacity = "1";
+            notif.style.visibility = "visible";
+            notif.style.transform = "translateY(-10px)";
+            
+            setTimeout(() => {
+                notif.style.opacity = "0";
+                notif.style.visibility = "hidden";
+                notif.style.transform = "translateY(0)";
+            }, 2500);
+        }
+    };
+
+    // 3. Главная функция (делаем её глобальной)
+    window.addToCart = function(id) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.push(id);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        updateVisuals();
+        window.showTerminalNotif(id);
+        console.log(`[SYSTEM]: ID ${id} SAVED`);
+    };
+
+    // Запуск при загрузке
+    document.addEventListener('DOMContentLoaded', updateVisuals);
+})();
+</script>
+
+
 <body>
+
     <nav style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #222; margin-bottom: 40px;">
-    <a href="/" style="color: #00ff00; text-decoration: none; font-size: 12px; letter-spacing: 2px; font-weight: bold;">← BACK TO ARCHIVE</a>
+    <a href="/" style="color: #636363; text-decoration: none; font-size: 12px; letter-spacing: 2px; font-weight: bold;">← BACK TO ARCHIVE</a>
     
     <div style="display: flex; gap: 25px;">
         <a href="/" style="color: #ffffff; text-decoration: none; font-size: 11px; letter-spacing: 1px;">PROTOTYPES</a>
@@ -71,12 +118,11 @@
 
     <!-- КНОПКИ (Нижняя полка) -->
     <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="buy-btn" style="border: 1px solid #000000; background: #ffffff; color: #7c7c7c; padding: 15px; font-weight: bold; cursor: pointer;">В КОРЗИНУ</button>
+        <button onclick="addToCart('{{.ID}}')" class="buy-btn" style="border: 1px solid #000; background: #fff; color: #000; padding: 15px; font-weight: bold; cursor: pointer; width: 100%;">В КОРЗИНУ</button>
         <button class="sub-btn" style="border: 1px solid #ffffff; background: none; color: #000000; padding: 10px; cursor: pointer;">ПРЕДЛОЖИТЬ СВОЮ ЦЕНУ</button>
         <button class="sub-btn" style="border: 1px solid #ffffff; background: none; color: #000000; padding: 10px; cursor: pointer;">ЗАДАТЬ ВОПРОС</button>
         <button class="sub-btn" style="border: 1px solid #ffffff; background: none; color: #000000; padding: 10px; cursor: pointer;">ПРОДАТЬ ПОХОЖЕЕ</button>
     </div>
-
     <!-- ОПИСАНИЕ -->
     <div class="description" style="margin-top: 20px; color: #888; font-size: 13px; line-height: 1.5;">
         {{.Description}}
@@ -85,6 +131,25 @@
             </div>
         </div>
     </div>
+
+<div style="margin-bottom: 5px; font-size: 0.8em;"> </div>
+
+
+<div class="archive-counter" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+    <a href="/cart" style="background: #636363; color: #fff; border: 1px solid #fff; padding: 10px 20px; text-decoration: none; font-family: monospace; display: block;">
+        АРХИВ ЗАКАЗА [<span id="cart-count">0</span>]
+    </a>
+    <!-- Выпадающий список при наведении -->
+    <div id="cart-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: #000; border: 1px solid #fff; width: 200px; padding: 10px; font-family: monospace; color: #fff; font-size: 10px;">
+        <div id="dropdown-items">ПУСТО...</div>
+    </div>
+</div>  
+
+<style>
+    .archive-counter:hover #cart-dropdown { display: block; }
+</style>
+<div id="terminal-notif" style="position: fixed; bottom: 30px; right: 30px; color: white; background: black; padding: 10px; border: 1px solid #333; z-index: 10000; font-family: monospace; display: block; opacity: 0; transition: all 0.5s;"></div>
+
 </body>
 </html>
 {{end}}
