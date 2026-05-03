@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/prototypes.css">
-    <title>АРХИВ ЗАКАЗА — {{.title}}</title>
+    <title>КОРЗИНА — {{.title}}</title>
 </head>
 
  <script>
@@ -19,7 +19,7 @@ async function showCart() {
         const emptyMsg = document.getElementById('empty-msg');
 
         if (cartIds.length === 0) {
-            emptyMsg.innerText = "АРХИВ ПУСТ.";
+            emptyMsg.innerText = "КОРЗИНА ПУСТА";
             return;
         }
 
@@ -42,7 +42,7 @@ async function showCart() {
 
         totalElem.innerText = total.toLocaleString();
     } catch (err) {
-        console.error("Ошибка загрузки архива:", err);
+        console.error("Ошибка загрузки корзины:", err);
     }
 }
 
@@ -59,7 +59,7 @@ showCart();
     <div class="container">
         <div class="header">
             <a href="/" class="back-link">← НАЗАД В ГЛАВНУЮ</a>
-            <h1 class="case-title">Шмотки</h1>
+            <h1 class="case-title">ВАША КОРЗИНА</h1>
         </div>
 
         <div id="cart-list" class="stack">
@@ -77,7 +77,7 @@ showCart();
             </div>
             
             <button onclick="checkout()" class="buy-btn" style="width: 100%; margin-top: 20px;">
-                ПОДТВЕРДИТЬ Оплату
+                ПЕРЕЙТИ К ОПЛАТЕ
             </button>
             
             <button onclick="clearCart()" class="back-link" style="background: none; border: none; margin-top: 10px; cursor: pointer; color: #777;">
