@@ -62,7 +62,9 @@
         <p class="item-name">{{.Brand}} {{.Model}}</p>
         <p class="item-price">{{.Price}} ₽</p>
         
-        <a href="/product/{{.ID}}" style="width: 100%;">
+        <button class="buy-btn" onclick="location.href='/product/{{.ID}}'">
+    КУПИТЬ
+</button>
             <button class="buy-btn">КУПИТЬ</button>
         </a>
     </div>
