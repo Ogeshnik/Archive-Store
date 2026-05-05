@@ -53,7 +53,9 @@ func AuthRequired() gin.HandlerFunc {
 		adminSecret := os.Getenv("ADMIN_SECRET")
 		token, err := c.Cookie("admin_token")
 		if err != nil || token != adminSecret {
-			c.HTML(http.StatusForbidden, "login.html", gin.H{"Status": "ДОСТУП ЗАПРЕЩЕН: ТЫ КТО ТАКОЙ?"})
+			c.HTML(http.StatusForbidden, "admin_login.html", gin.H{
+				"error": "ДОСТУП ЗАПРЕЩЕН",
+			})
 			c.Abort()
 			return
 		}
@@ -110,18 +112,14 @@ func rateLimitMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
 func setSecureCookie(c *gin.Context, name, value string, maxAge int) {
-	proto := c.GetHeader("X-Forwarded-Proto")
-	isHTTPS := strings.EqualFold(proto, "https")
-
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     name,
 		Value:    value,
 		Path:     "/",
 		MaxAge:   maxAge,
 		HttpOnly: true,
-		Secure:   isHTTPS,
+		Secure:   false, // локально без HTTPS
 		SameSite: http.SameSiteLaxMode,
 	})
 }
