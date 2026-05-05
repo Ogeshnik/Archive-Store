@@ -218,42 +218,6 @@
         {{.Status}}
     </h1>
 
-    <script>
-        (function() {
-            function updateVisuals() {
-                const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const countElem = document.getElementById('cart-count');
-                if (countElem) countElem.innerText = cart.length;
-            }
-
-            window.showTerminalNotif = function(id) {
-                const notif = document.getElementById('terminal-notif');
-                if (notif) {
-                    notif.innerText = `> Товар ${id} В корзине...`;
-                    notif.style.opacity = "1";
-                    notif.style.visibility = "visible";
-                    notif.style.transform = "translateY(-10px)";
-                    setTimeout(() => {
-                        notif.style.opacity = "0";
-                        notif.style.visibility = "hidden";
-                        notif.style.transform = "translateY(0)";
-                    }, 2500);
-                }
-            };
-
-            window.addToCart = function(id) {
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                cart.push(id);
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateVisuals();
-                window.showTerminalNotif(id);
-                console.log(`[SYSTEM]: ID ${id} SAVED`);
-            };
-
-            document.addEventListener('DOMContentLoaded', updateVisuals);
-        })();
-    </script>
-
     <nav class="nav-bar">
         <a href="/" class="nav-btn">ГЛАВНАЯ</a>
         <a href="/shop/prototypes" class="nav-btn">PROTOTYPES</a>
@@ -318,6 +282,41 @@
     </div>
 
     <div id="terminal-notif" style="position: fixed; bottom: 30px; right: 30px; color: white; background: black; padding: 10px; border: 1px solid #333; z-index: 10000; font-family: monospace; opacity: 0; transition: all 0.5s;"></div>
+<script>
+        (function() {
+            function updateVisuals() {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const countElem = document.getElementById('cart-count');
+                if (countElem) countElem.innerText = cart.length;
+            }
+
+            window.showTerminalNotif = function(id) {
+                const notif = document.getElementById('terminal-notif');
+                if (notif) {
+                    notif.innerText = `> Товар ${id} В корзине...`;
+                    notif.style.opacity = "1";
+                    notif.style.visibility = "visible";
+                    notif.style.transform = "translateY(-10px)";
+                    setTimeout(() => {
+                        notif.style.opacity = "0";
+                        notif.style.visibility = "hidden";
+                        notif.style.transform = "translateY(0)";
+                    }, 2500);
+                }
+            };
+
+            window.addToCart = function(id) {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                cart.push(id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateVisuals();
+                window.showTerminalNotif(id);
+                console.log(`[SYSTEM]: ID ${id} SAVED`);
+            };
+
+            document.addEventListener('DOMContentLoaded', updateVisuals);
+        })();
+    </script>
 
 </body>
 </html>
