@@ -292,6 +292,17 @@ func main() {
 	admin := r.Group("/admin")
 	admin.Use(AuthRequired())
 	{
+		admin.POST("/delete/:id", func(c *gin.Context) {
+			id := c.Param("id")
+
+			if err := db.Delete(&Item{}, id).Error; err != nil {
+				c.String(500, "Ошибка удаления")
+				return
+			}
+
+			c.Redirect(303, "/admin/")
+		})
+
 		admin.GET("/", func(c *gin.Context) {
 			c.HTML(200, "admin.html", nil)
 		})

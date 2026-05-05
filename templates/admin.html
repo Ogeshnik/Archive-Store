@@ -154,6 +154,12 @@
     <div class="nav">
         <a href="/">← На главную</a>
         <a href="/admin/logout" class="logout">ВЫХОД</a>
+        <form action="/admin/delete/{{.ID}}" method="POST" style="margin-top:10px;">
+    <button style="background:red;color:white;border:none;padding:5px 10px;cursor:pointer;">
+        УДАЛИТЬ
+    </button>
+</form>
+
     </div>
 </div>
 
