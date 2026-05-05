@@ -112,14 +112,16 @@ func rateLimitMiddleware() gin.HandlerFunc {
 }
 
 func setSecureCookie(c *gin.Context, name, value string, maxAge int) {
-	secure := c.Request.TLS != nil
+	proto := c.GetHeader("X-Forwarded-Proto")
+	isHTTPS := strings.EqualFold(proto, "https")
+
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     name,
 		Value:    value,
 		Path:     "/",
 		MaxAge:   maxAge,
 		HttpOnly: true,
-		Secure:   secure,
+		Secure:   isHTTPS,
 		SameSite: http.SameSiteLaxMode,
 	})
 }
