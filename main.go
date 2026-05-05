@@ -270,6 +270,24 @@ func main() {
 		setSecureCookie(c, "admin_token", adminSecret, 3600*24)
 		c.Redirect(http.StatusSeeOther, "/admin/")
 	})
+	r.GET("/product/:id", func(c *gin.Context) {
+		id := c.Param("id")
+
+		var item Item
+		if err := db.First(&item, id).Error; err != nil {
+			c.String(404, "Товар не найден")
+			return
+		}
+
+		c.HTML(200, "product.html", gin.H{
+			"Brand": item.Brand,
+			"Model": item.Model,
+			"Price": item.Price,
+			"Image": item.Image,
+			"Year":  item.Year,
+			"ID":    item.ID,
+		})
+	})
 
 	admin := r.Group("/admin")
 	admin.Use(AuthRequired())
