@@ -140,6 +140,7 @@
                 <option value="mihara">Mihara</option>
                 <option value="saint">Saint Michael</option>
                 <option value="soloist">Soloist</option>
+                
             </select>
         </div>
 
@@ -150,15 +151,22 @@
 
         <button type="submit">ДОБАВИТЬ ТОВАР</button>
     </form>
+{{range .Items}}
+<div style="border:1px solid #333; padding:15px; margin-top:15px;">
+    <p>ID: {{.ID}}</p>
+    <p>{{.Brand}} — {{.Model}} — {{.Price}} ₽</p>
 
+    <form action="/admin/delete/{{.ID}}" method="POST">
+        <button style="background:red;color:white;border:none;padding:6px 12px;cursor:pointer;">
+            УДАЛИТЬ
+        </button>
+    </form>
+</div>
+{{end}}
     <div class="nav">
         <a href="/">← На главную</a>
         <a href="/admin/logout" class="logout">ВЫХОД</a>
-        <form action="/admin/delete/{{.ID}}" method="POST" style="margin-top:10px;">
-    <button style="background:red;color:white;border:none;padding:5px 10px;cursor:pointer;">
-        УДАЛИТЬ
-    </button>
-</form>
+        
 
     </div>
 </div>

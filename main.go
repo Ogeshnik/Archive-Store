@@ -292,28 +292,38 @@ func main() {
 	admin := r.Group("/admin")
 	admin.Use(AuthRequired())
 	{
+		// --- АДМИН ГЛАВНАЯ + СПИСОК ТОВАРОВ ---
+		admin.GET("/", func(c *gin.Context) {
+			var items []Item
+			db.Find(&items)
+
+			c.HTML(200, "admin.html", gin.H{
+				"Items": items,
+			})
+		})
+
+		// --- УДАЛЕНИЕ ТОВАРА ---
 		admin.POST("/delete/:id", func(c *gin.Context) {
 			id := c.Param("id")
-
-			if err := db.Delete(&Item{}, id).Error; err != nil {
-				c.String(500, "Ошибка удаления")
-				return
-			}
-
+			db.Delete(&Item{}, id)
 			c.Redirect(303, "/admin/")
 		})
 
-		admin.GET("/", func(c *gin.Context) {
-			c.HTML(200, "admin.html", nil)
-		})
-
+		// --- ВЫХОД ---
 		admin.GET("/logout", func(c *gin.Context) {
-			http.SetCookie(c.Writer, &http.Cookie{Name: "admin_token", Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode})
+			http.SetCookie(c.Writer, &http.Cookie{
+				Name:     "admin_token",
+				Value:    "",
+				Path:     "/",
+				MaxAge:   -1,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			})
 			c.Redirect(http.StatusSeeOther, "/")
 		})
 
+		// --- ДОБАВЛЕНИЕ ТОВАРА ---
 		admin.POST("/add", func(c *gin.Context) {
-
 			var newItem Item
 
 			newItem.Brand = c.PostForm("brand")
@@ -329,7 +339,7 @@ func main() {
 
 			db.Create(&newItem)
 
-			c.Redirect(303, "/")
+			c.Redirect(303, "/admin/")
 		})
 	}
 	// --- ГЛАВНАЯ СТРАНИЦА (ОБЪЕДИНЕННАЯ) ---
