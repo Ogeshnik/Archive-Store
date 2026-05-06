@@ -288,7 +288,11 @@ func main() {
 			"ID":    item.ID,
 		})
 	})
-
+	r.GET("/api/items", func(c *gin.Context) {
+		var items []Item
+		db.Find(&items)
+		c.JSON(200, items)
+	})
 	admin := r.Group("/admin")
 	admin.Use(AuthRequired())
 	{
